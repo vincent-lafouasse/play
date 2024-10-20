@@ -16,6 +16,13 @@ int main() {
     std::vector<uint8_t> bytes(std::istreambuf_iterator<char>(input), {});
     size_t index = 0;
 
-    std::string fourcc = LittleEndian::read_fourcc(bytes, index);
-    std::cout << fourcc << std::endl;
+    std::cout << LittleEndian::read_fourcc(bytes, index) << std::endl;
+    std::cout << LittleEndian::read_u32(bytes, index) << std::endl;
+    std::cout << LittleEndian::read_fourcc(bytes, index) << std::endl;
+    std::cout << LittleEndian::read_fourcc(bytes, index) << std::endl;
+    std::cout << LittleEndian::read_u32(bytes, index) << std::endl;
+    std::cout << LittleEndian::read_u16(bytes, index) << std::endl;
+    std::cout << LittleEndian::read_u16(bytes, index) << std::endl;
+    std::cout << LittleEndian::read_u32(bytes, index) << std::endl;
+    std::cout << LittleEndian::read_u32(bytes, index) << std::endl;
 }
