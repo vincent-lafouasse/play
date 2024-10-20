@@ -11,8 +11,15 @@
 #define WAVE_FORMAT_MULAW 0x0007
 #define WAVE_FORMAT_EXTENSIBLE 0xFFFE
 
-int main() {
-    std::ifstream input(wav, std::ios::binary | std::ios::in);
+#define USAGE "play WAV_FILE"
+
+int main(int ac, char* av[]) {
+    if (ac != 2) {
+        std::cerr << USAGE << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    std::ifstream input(av[1], std::ios::binary | std::ios::in);
     if (!input.is_open()) {
         std::cerr << "Failed to open file " << wav << std::endl;
         std::exit(EXIT_FAILURE);
