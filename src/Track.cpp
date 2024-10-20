@@ -21,38 +21,15 @@ struct MetaData {
     uint16_t n_channels;
     uint32_t sample_rate;
     uint32_t bit_depth;
+
+    void log() const {
+        std::cout << "n channels " << sample_rate << "\nn_channels "
+                  << n_channels << "\nbit depth " << bit_depth << std::endl;
+    }
 };
 
-MetaData read_metadata(Bytes& bytes, size_t& at) {
-    MetaData metadata = {};
-
-    assert(LittleEndian::read_fourcc(bytes, at) == "RIFF");
-    LittleEndian::read_u32(bytes, at);  // discard chunk size
-    assert(LittleEndian::read_fourcc(bytes, at) == "WAVE");
-
-    assert(LittleEndian::read_fourcc(bytes, at) == "fmt ");
-    uint32_t fmt_chunk_sz =
-        LittleEndian::read_u32(bytes, at);  // either 16, 18 or 40
-    assert(fmt_chunk_sz == 16 || fmt_chunk_sz == 18 || fmt_chunk_sz == 40);
-    assert(LittleEndian::read_u16(bytes, at) == WAVE_FORMAT_PCM);
-    metadata.n_channels = LittleEndian::read_u16(bytes, at);
-    metadata.sample_rate = LittleEndian::read_u32(bytes, at);
-    LittleEndian::read_u32(bytes, at);  // discard data rate
-    LittleEndian::read_u16(bytes, at);  // discard block size
-    metadata.bit_depth = LittleEndian::read_u16(bytes, at);
-
-    if (fmt_chunk_sz > 16)
-        LittleEndian::read_u16(bytes, at);
-    if (fmt_chunk_sz > 18) {
-        // discard 22 bytes
-        LittleEndian::read_u64(bytes, at);  // discard 8
-        LittleEndian::read_u64(bytes, at);  // discard 16
-        LittleEndian::read_u32(bytes, at);  // discard 20
-        LittleEndian::read_u16(bytes, at);  // discard 22
-    }
-
-    return metadata;
-}
+static MetaData read_format_chunk(Bytes& bytes, size_t& at);
+void skip_chunk_until(Bytes& bytes, size_t& at, const std::string& fourcc);
 
 Track::Track(const std::string& path) {
     std::ifstream input(path, std::ios::binary | std::ios::in);
@@ -64,6 +41,45 @@ Track::Track(const std::string& path) {
     std::vector<uint8_t> bytes(std::istreambuf_iterator<char>(input), {});
     size_t index = 0;
 
-    MetaData metadata = read_metadata(bytes, index);
+    assert(LittleEndian::read_fourcc(bytes, index) == "RIFF");
+    index += 4;  // discard chunk size
+    assert(LittleEndian::read_fourcc(bytes, index) == "WAVE");
+
+    skip_chunk_until(bytes, index, "fmt ");
+    MetaData metadata = read_format_chunk(bytes, index);
+    metadata.log();
+
+    skip_chunk_until(bytes, index, "data");
     std::cout << LittleEndian::peek_fourcc(bytes, index) << std::endl;
+}
+
+MetaData read_format_chunk(Bytes& bytes, size_t& at) {
+    MetaData metadata = {};
+
+    assert(LittleEndian::read_fourcc(bytes, at) == "fmt ");
+    uint32_t fmt_chunk_sz =
+        LittleEndian::read_u32(bytes, at);  // either 16, 18 or 40
+    assert(fmt_chunk_sz == 16 || fmt_chunk_sz == 18 || fmt_chunk_sz == 40);
+    assert(LittleEndian::read_u16(bytes, at) == WAVE_FORMAT_PCM);
+    metadata.n_channels = LittleEndian::read_u16(bytes, at);
+    metadata.sample_rate = LittleEndian::read_u32(bytes, at);
+    at += 4;  // discard data rate
+    at += 2;  // discard block size
+    metadata.bit_depth = LittleEndian::read_u16(bytes, at);
+
+    if (fmt_chunk_sz > 16)
+        at += 2;
+    if (fmt_chunk_sz > 18)
+        at += 22;
+
+    return metadata;
+}
+
+void skip_chunk_until(Bytes& bytes, size_t& at, const std::string& fourcc) {
+    while (LittleEndian::peek_fourcc(bytes, at) != fourcc) {
+        at += 4;  // discard fourcc
+        uint32_t size = LittleEndian::read_u32(bytes, at);
+        at += size;
+    }
+    assert(LittleEndian::peek_fourcc(bytes, at) == fourcc);
 }
