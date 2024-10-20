@@ -17,6 +17,12 @@ void log_var(const T& e) {
     std::cout << e << std::endl;
 }
 
+struct MetaData {
+    uint16_t n_channels;
+    uint32_t sample_rate;
+    uint32_t bit_depth;
+};
+
 Track::Track(const std::string& path) {
     std::ifstream input(path, std::ios::binary | std::ios::in);
     if (!input.is_open()) {
@@ -26,6 +32,8 @@ Track::Track(const std::string& path) {
 
     std::vector<uint8_t> bytes(std::istreambuf_iterator<char>(input), {});
     size_t index = 0;
+
+    MetaData metadata = {};
 
     assert(LittleEndian::read_fourcc(bytes, index) == "RIFF");
     LittleEndian::read_u32(bytes, index);  // discard chunk size
