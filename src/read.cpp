@@ -12,7 +12,7 @@ namespace LittleEndian {
 
     uint16_t out{};
     for (size_t i = 0; i < 2; i++)
-        out += (bytes[at + i] << i);
+        out += (bytes[at + i] << 8 * i);
 
     at += 2;
     return out;
@@ -23,7 +23,7 @@ namespace LittleEndian {
 
     uint16_t out{};
     for (size_t i = 0; i < 2; i++)
-        out += (bytes[at + i] << i);
+        out += (bytes[at + i] << 8 * i);
 
     at += 4;
     return out;
@@ -34,7 +34,7 @@ namespace LittleEndian {
 
     uint64_t out{};
     for (size_t i = 0; i < 8; i++)
-        out += (bytes[at + i] << i);
+        out += (bytes[at + i] << 8 * i);
 
     at += 8;
     return out;
@@ -66,7 +66,7 @@ namespace LittleEndian {
     bool is_negative = byte3 & 0b10000000;  // top bit
     byte3 = byte3 & 0b01111111;
 
-    int32_t out = byte1 + (byte2 << 1) + (byte3 << 2);  // read as u24
+    int32_t out = byte1 + (byte2 << 8) + (byte3 << 16);  // read as u24
     if (is_negative)
         out -= (1 << 23);  // rectify is top bit is lit
 

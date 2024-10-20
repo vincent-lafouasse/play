@@ -41,11 +41,10 @@ Track::Track(const std::string& path) {
 
     assert(LittleEndian::read_fourcc(bytes, index) == "fmt ");
     uint32_t fmt_chunk_sz = LittleEndian::read_u32(bytes, index);
-    log_var<uint32_t>(fmt_chunk_sz);
     assert(LittleEndian::read_u16(bytes, index) == WAVE_FORMAT_PCM);
     uint16_t n_channels = LittleEndian::read_u16(bytes, index);
-    log_var<uint16_t>(n_channels);
     uint32_t blocks_per_sec = LittleEndian::read_u32(bytes, index);
+    log_var<uint32_t>(blocks_per_sec);
     uint32_t data_rate = LittleEndian::read_u32(bytes, index);
     uint16_t block_size = LittleEndian::read_u32(bytes, index);
     uint16_t sample_size = LittleEndian::read_u32(bytes, index);
