@@ -47,6 +47,8 @@ Track::Track(const std::string& path) {
 
     skip_chunk_until(bytes, index, "fmt ");
     MetaData metadata = read_format_chunk(bytes, index);
+    assert(metadata.bit_depth == 8 || metadata.bit_depth == 16 ||
+           metadata.bit_depth == 24 || metadata.bit_depth == 32);
     metadata.log();
 
     skip_chunk_until(bytes, index, "data");
