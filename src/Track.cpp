@@ -1,4 +1,5 @@
 #include "Track.h"
+#include <cassert>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -15,13 +16,7 @@ Track::Track(const std::string& path) {
     std::vector<uint8_t> bytes(std::istreambuf_iterator<char>(input), {});
     size_t index = 0;
 
-    std::cout << LittleEndian::read_fourcc(bytes, index) << std::endl;
-    std::cout << LittleEndian::read_u32(bytes, index) << std::endl;
-    std::cout << LittleEndian::read_fourcc(bytes, index) << std::endl;
-    std::cout << LittleEndian::read_fourcc(bytes, index) << std::endl;
-    std::cout << LittleEndian::read_u32(bytes, index) << std::endl;
-    std::cout << LittleEndian::read_u16(bytes, index) << std::endl;
-    std::cout << LittleEndian::read_u16(bytes, index) << std::endl;
-    std::cout << LittleEndian::read_u32(bytes, index) << std::endl;
-    std::cout << LittleEndian::read_u32(bytes, index) << std::endl;
+    assert(LittleEndian::read_fourcc(bytes, index) == "RIFF");
+    LittleEndian::read_u32(bytes, index);  // discard chunk size
+    assert(LittleEndian::read_fourcc(bytes, index) == "WAVE");
 }
