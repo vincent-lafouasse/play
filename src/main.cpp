@@ -4,7 +4,6 @@
 
 #include "read.h"
 
-[[maybe_unused]] const char* wav = "./wav/nice_chord.wav";
 #define WAVE_FORMAT_PCM 0x0001
 #define WAVE_FORMAT_IEEE_FLOAT 0x0003
 #define WAVE_FORMAT_ALAW 0x0006
@@ -19,9 +18,10 @@ int main(int ac, char* av[]) {
         std::exit(EXIT_FAILURE);
     }
 
-    std::ifstream input(av[1], std::ios::binary | std::ios::in);
+    const char* path = av[1];
+    std::ifstream input(path, std::ios::binary | std::ios::in);
     if (!input.is_open()) {
-        std::cerr << "Failed to open file " << wav << std::endl;
+        std::cerr << "Failed to open file " << path << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
