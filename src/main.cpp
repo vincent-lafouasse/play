@@ -4,8 +4,7 @@
 
 #include "read.h"
 
-[[maybe_unused]]
-const char* wav = "./wav/nice_chord.wav";
+[[maybe_unused]] const char* wav = "./wav/nice_chord.wav";
 
 int main() {
     std::ifstream input(wav, std::ios::binary | std::ios::in);
