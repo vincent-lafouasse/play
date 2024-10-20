@@ -42,12 +42,9 @@ namespace LittleEndian {
 
 [[maybe_unused]] std::string read_fourcc(const Bytes& bytes, size_t& at) {
     assert(at + 4 < bytes.size());
-
-    char buffer[5] = {0};
-    std::memcpy(buffer, &bytes[at], 4);
-
+    std::string out = LittleEndian::peek_fourcc(bytes, at);
     at += 4;
-    return std::string(buffer);
+    return out;
 }
 
 [[maybe_unused]] std::string peek_fourcc(const Bytes& bytes, size_t& at) {
