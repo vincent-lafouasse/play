@@ -49,4 +49,12 @@ namespace LittleEndian {
     at += 4;
     return std::string(buffer);
 }
+
+[[maybe_unused]] std::string peek_fourcc(const Bytes& bytes, size_t& at) {
+    assert(at + 4 < bytes.size());
+
+    char buffer[5] = {0};
+    std::memcpy(buffer, &bytes[at], 4);
+    return std::string(buffer);
+}
 }  // namespace LittleEndian

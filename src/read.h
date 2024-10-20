@@ -12,4 +12,5 @@ namespace LittleEndian {
 [[maybe_unused]] uint32_t read_u32(const Bytes& bytes, size_t& at);
 [[maybe_unused]] uint64_t read_u64(const Bytes& bytes, size_t& at);
 [[maybe_unused]] std::string read_fourcc(const Bytes& bytes, size_t& at);
+[[maybe_unused]] std::string peek_fourcc(const Bytes& bytes, size_t& at);
 }  // namespace LittleEndian
