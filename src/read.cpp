@@ -57,4 +57,23 @@ namespace LittleEndian {
     std::memcpy(buffer, &bytes[at], 4);
     return std::string(buffer);
 }
+
+[[maybe_unused]] int32_t read_i24(const Bytes& bytes, size_t& at) {
+    assert(at + 3 < bytes.size());
+
+    uint8_t byte1 = bytes[at];  // LSD
+    uint8_t byte2 = bytes[at + 1];
+    uint8_t byte3 = bytes[at + 2];  // MSD
+
+    // most significant byte contains sign information on top bit
+    bool is_negative = byte3 & 0b10000000;  // top bit
+    byte3 = byte3 & 0b01111111;
+
+    int32_t out = byte1 + (byte2 << 1) + (byte3 << 2);  // read as u24
+    if (is_negative)
+        out -= (1 << 23);  // rectify is top bit is lit
+
+    at += 3;
+    return out;
+}
 }  // namespace LittleEndian
