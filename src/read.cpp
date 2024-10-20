@@ -2,6 +2,11 @@
 #include <cassert>
 
 namespace LittleEndian {
+[[maybe_unused]] uint8_t read_u8(const Bytes& bytes, size_t& at) {
+    assert(at + 1 < bytes.size());
+    return bytes[at++];
+}
+
 [[maybe_unused]] uint16_t read_u16(const Bytes& bytes, size_t& at) {
     assert(at + 2 < bytes.size());
 
@@ -21,6 +26,17 @@ namespace LittleEndian {
         out += (bytes[at + i] << i);
 
     at += 4;
+    return out;
+}
+
+[[maybe_unused]] uint64_t read_u64(const Bytes& bytes, size_t& at) {
+    assert(at + 8 < bytes.size());
+
+    uint64_t out{};
+    for (size_t i = 0; i < 8; i++)
+        out += (bytes[at + i] << i);
+
+    at += 8;
     return out;
 }
 
