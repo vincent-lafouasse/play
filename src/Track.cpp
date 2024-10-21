@@ -28,8 +28,10 @@ struct MetaData {
 };
 
 static MetaData read_metadata(LittleEndianReader& reader);
+static std::vector<std::vector<float>> read_data(LittleEndianReader& reader,
+                                                 MetaData metata);
 
-Track::Track(const std::string& path) {
+Track::Track(const std::string& path) : data() {
     LittleEndianReader reader(path);
 
     MetaData metadata = read_metadata(reader);
@@ -39,6 +41,44 @@ Track::Track(const std::string& path) {
     metadata.log();
 
     assert(reader.peek_fourcc() == "data");
+    data = read_data(reader, metadata);
+}
+
+static float read_sample(LittleEndianReader& reader, uint32_t bit_depth);
+
+static std::vector<std::vector<float>> read_data(LittleEndianReader& reader,
+                                                 MetaData metadata) {
+    assert(reader.peek_fourcc() == "data");
+    std::vector<std::vector<float>> out{};
+    size_t n_blocks =
+        reader.read_u32() / (metadata.n_channels * metadata.bit_depth / 8);
+
+    out.push_back(std::vector<float>());
+    if (metadata.n_channels == 2)
+        out.push_back(std::vector<float>());
+
+    for (size_t _ = 0; _ < n_blocks; _++) {
+        for (size_t channel = 0; channel < metadata.n_channels; channel++)
+            out[channel].push_back(read_sample(reader, metadata.bit_depth));
+    }
+
+    return out;
+}
+
+static float read_sample(LittleEndianReader& reader, uint32_t bit_depth) {
+    if (bit_depth == 24) {
+        int32_t sample = reader.read_i24();
+        int32_t i24_max = (1 << 23) - 1;
+
+        if (sample > i24_max)
+            sample = i24_max;
+        if (sample < -i24_max)
+            sample = -i24_max;
+        return static_cast<float>(sample) / static_cast<float>(i24_max);
+    }
+
+    std::cerr << "unrecognized bit depth: " << bit_depth << std::endl;
+    std::exit(1);
 }
 
 static MetaData read_format_chunk(LittleEndianReader& reader);
