@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "OutputStream.h"
 #include "Track.h"
 
 #define USAGE "play WAV_FILE"
