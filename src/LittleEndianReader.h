@@ -4,7 +4,24 @@
 #include <string>
 #include <vector>
 
-typedef std::vector<uint8_t> Bytes;
+typedef std::vector<char> Bytes;
+
+class LittleEndianReader {
+   public:
+    LittleEndianReader(const std::string& path);
+    void advance(size_t n);
+    uint8_t read_u8();
+    uint16_t read_u16();
+    uint32_t read_u32();
+    uint64_t read_u64();
+    int32_t read_i24();
+    std::string read_fourcc();
+    std::string peek_fourcc() const;
+
+   private:
+    std::vector<char> bytes;
+    size_t index;
+};
 
 namespace LittleEndian {
 [[maybe_unused]] uint8_t read_u8(const Bytes& bytes, size_t& at);

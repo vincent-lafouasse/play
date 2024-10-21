@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "read.h"
+#include "LittleEndianReader.h"
 
 #define WAVE_FORMAT_PCM 0x0001
 #define WAVE_FORMAT_IEEE_FLOAT 0x0003
@@ -28,70 +28,60 @@ struct MetaData {
     }
 };
 
-static MetaData read_metadata(Bytes& bytes, size_t& at);
-static MetaData read_format_chunk(Bytes& bytes, size_t& at);
-static void skip_chunk_until(Bytes& bytes,
-                             size_t& at,
+static MetaData read_metadata(LittleEndianReader& reader);
+static MetaData read_format_chunk(LittleEndianReader& reader);
+static void skip_chunk_until(LittleEndianReader& reader,
                              const std::string& fourcc);
 
 Track::Track(const std::string& path) {
-    std::ifstream input(path, std::ios::binary | std::ios::in);
-    if (!input.is_open()) {
-        std::cerr << "Failed to open file " << path << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    LittleEndianReader reader(path);
 
-    std::vector<uint8_t> bytes(std::istreambuf_iterator<char>(input), {});
-    size_t index = 0;
-
-    MetaData metadata = read_metadata(bytes, index);
-    assert(LittleEndian::peek_fourcc(bytes, index) == "data");
+    MetaData metadata = read_metadata(reader);
+    assert(reader.peek_fourcc() == "data");
 }
 
-static MetaData read_metadata(Bytes& bytes, size_t& at) {
-    assert(LittleEndian::read_fourcc(bytes, at) == "RIFF");
-    at += 4;  // discard chunk size
-    assert(LittleEndian::read_fourcc(bytes, at) == "WAVE");
+static MetaData read_metadata(LittleEndianReader(&reader)) {
+    assert(reader.read_fourcc() == "RIFF");
+    reader.advance(4);  // discard chunk size
+    assert(reader.read_fourcc() == "WAVE");
 
-    skip_chunk_until(bytes, at, "fmt ");
-    MetaData metadata = read_format_chunk(bytes, at);
+    skip_chunk_until(reader, "fmt ");
+    MetaData metadata = read_format_chunk(reader);
     assert(metadata.bit_depth == 8 || metadata.bit_depth == 16 ||
            metadata.bit_depth == 24 || metadata.bit_depth == 32);
     metadata.log();
 
-    skip_chunk_until(bytes, at, "data");
+    skip_chunk_until(reader, "data");
     return metadata;
 }
 
-static MetaData read_format_chunk(Bytes& bytes, size_t& at) {
+static MetaData read_format_chunk(LittleEndianReader& reader) {
     MetaData metadata = {};
 
-    assert(LittleEndian::read_fourcc(bytes, at) == "fmt ");
-    uint32_t fmt_chunk_sz =
-        LittleEndian::read_u32(bytes, at);  // either 16, 18 or 40
+    assert(reader.read_fourcc() == "fmt ");
+    uint32_t fmt_chunk_sz = reader.read_u32();  // either 16, 18 or 40
     assert(fmt_chunk_sz == 16 || fmt_chunk_sz == 18 || fmt_chunk_sz == 40);
-    assert(LittleEndian::read_u16(bytes, at) == WAVE_FORMAT_PCM);
-    metadata.n_channels = LittleEndian::read_u16(bytes, at);
-    metadata.sample_rate = LittleEndian::read_u32(bytes, at);
-    at += 4;  // discard data rate
-    at += 2;  // discard block size
-    metadata.bit_depth = LittleEndian::read_u16(bytes, at);
+    assert(reader.read_u16() == WAVE_FORMAT_PCM);
+    metadata.n_channels = reader.read_u16();
+    metadata.sample_rate = reader.read_u32();
+    reader.advance(4);  // discard data rate
+    reader.advance(2);  // discard block size
+    metadata.bit_depth = reader.read_u16();
 
     if (fmt_chunk_sz > 16)
-        at += 2;
+        reader.advance(2);
     if (fmt_chunk_sz > 18)
-        at += 22;
+        reader.advance(22);
 
     return metadata;
 }
 
-static void skip_chunk_until(Bytes& bytes,
-                             size_t& at,
+static void skip_chunk_until(LittleEndianReader& reader,
                              const std::string& fourcc) {
-    while (LittleEndian::peek_fourcc(bytes, at) != fourcc) {
-        at += 4;  // discard fourcc
-        uint32_t size = LittleEndian::read_u32(bytes, at);
-        at += size;
+    while (reader.peek_fourcc() != fourcc) {
+        reader.advance(4);  // discard fourcc
+        uint32_t size = reader.read_u32();
+        reader.advance(size);
     }
-    assert(LittleEndian::peek_fourcc(bytes, at) == fourcc);
+    assert(reader.peek_fourcc() == fourcc);
 }

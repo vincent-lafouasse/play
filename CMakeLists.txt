@@ -11,8 +11,8 @@ add_executable(play)
 target_sources(play PRIVATE
 	src/main.cpp
 
-	src/read.cpp
-	src/read.h
+	src/LittleEndianReader.cpp
+	src/LittleEndianReader.h
 
 	src/Track.cpp
 	src/Track.h
