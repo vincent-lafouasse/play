@@ -1,7 +1,6 @@
 #include "Track.h"
 #include <cassert>
 #include <cstdint>
-#include <fstream>
 #include <iostream>
 
 #include "LittleEndianReader.h"
@@ -29,9 +28,6 @@ struct MetaData {
 };
 
 static MetaData read_metadata(LittleEndianReader& reader);
-static MetaData read_format_chunk(LittleEndianReader& reader);
-static void skip_chunk_until(LittleEndianReader& reader,
-                             const std::string& fourcc);
 
 Track::Track(const std::string& path) {
     LittleEndianReader reader(path);
@@ -39,6 +35,10 @@ Track::Track(const std::string& path) {
     MetaData metadata = read_metadata(reader);
     assert(reader.peek_fourcc() == "data");
 }
+
+static MetaData read_format_chunk(LittleEndianReader& reader);
+static void skip_chunk_until(LittleEndianReader& reader,
+                             const std::string& fourcc);
 
 static MetaData read_metadata(LittleEndianReader(&reader)) {
     assert(reader.read_fourcc() == "RIFF");
