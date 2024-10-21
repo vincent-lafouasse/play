@@ -28,8 +28,11 @@ struct MetaData {
     }
 };
 
+static MetaData read_metadata(Bytes& bytes, size_t& at);
 static MetaData read_format_chunk(Bytes& bytes, size_t& at);
-void skip_chunk_until(Bytes& bytes, size_t& at, const std::string& fourcc);
+static void skip_chunk_until(Bytes& bytes,
+                             size_t& at,
+                             const std::string& fourcc);
 
 Track::Track(const std::string& path) {
     std::ifstream input(path, std::ios::binary | std::ios::in);
@@ -41,21 +44,26 @@ Track::Track(const std::string& path) {
     std::vector<uint8_t> bytes(std::istreambuf_iterator<char>(input), {});
     size_t index = 0;
 
-    assert(LittleEndian::read_fourcc(bytes, index) == "RIFF");
-    index += 4;  // discard chunk size
-    assert(LittleEndian::read_fourcc(bytes, index) == "WAVE");
+    MetaData metadata = read_metadata(bytes, index);
+    assert(LittleEndian::peek_fourcc(bytes, index) == "data");
+}
 
-    skip_chunk_until(bytes, index, "fmt ");
-    MetaData metadata = read_format_chunk(bytes, index);
+static MetaData read_metadata(Bytes& bytes, size_t& at) {
+    assert(LittleEndian::read_fourcc(bytes, at) == "RIFF");
+    at += 4;  // discard chunk size
+    assert(LittleEndian::read_fourcc(bytes, at) == "WAVE");
+
+    skip_chunk_until(bytes, at, "fmt ");
+    MetaData metadata = read_format_chunk(bytes, at);
     assert(metadata.bit_depth == 8 || metadata.bit_depth == 16 ||
            metadata.bit_depth == 24 || metadata.bit_depth == 32);
     metadata.log();
 
-    skip_chunk_until(bytes, index, "data");
-    std::cout << LittleEndian::peek_fourcc(bytes, index) << std::endl;
+    skip_chunk_until(bytes, at, "data");
+    return metadata;
 }
 
-MetaData read_format_chunk(Bytes& bytes, size_t& at) {
+static MetaData read_format_chunk(Bytes& bytes, size_t& at) {
     MetaData metadata = {};
 
     assert(LittleEndian::read_fourcc(bytes, at) == "fmt ");
@@ -77,7 +85,9 @@ MetaData read_format_chunk(Bytes& bytes, size_t& at) {
     return metadata;
 }
 
-void skip_chunk_until(Bytes& bytes, size_t& at, const std::string& fourcc) {
+static void skip_chunk_until(Bytes& bytes,
+                             size_t& at,
+                             const std::string& fourcc) {
     while (LittleEndian::peek_fourcc(bytes, at) != fourcc) {
         at += 4;  // discard fourcc
         uint32_t size = LittleEndian::read_u32(bytes, at);
