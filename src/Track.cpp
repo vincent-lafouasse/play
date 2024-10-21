@@ -31,7 +31,7 @@ static MetaData read_metadata(LittleEndianReader& reader);
 static std::vector<std::vector<float>> read_data(LittleEndianReader& reader,
                                                  MetaData metata);
 
-Track::Track(const std::string& path) : data() {
+Track::Track(const std::string& path) : m_data() {
     LittleEndianReader reader(path);
 
     MetaData metadata = read_metadata(reader);
@@ -41,7 +41,8 @@ Track::Track(const std::string& path) : data() {
     metadata.log();
 
     assert(reader.peek_fourcc() == "data");
-    data = read_data(reader, metadata);
+    m_data = read_data(reader, metadata);
+    m_sampling_rate = metadata.sample_rate;
 }
 
 static float read_sample(LittleEndianReader& reader, uint32_t bit_depth);
@@ -125,4 +126,16 @@ static void skip_chunk_until(LittleEndianReader& reader,
         reader.advance(size);
     }
     assert(reader.peek_fourcc() == fourcc);
+}
+
+size_t Track::n_channels() const {
+    return m_data.size();
+}
+
+size_t Track::sampling_rate() const {
+    return m_sampling_rate;
+}
+
+size_t Track::len() const {
+    return m_data[0].size();
 }

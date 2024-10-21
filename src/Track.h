@@ -12,5 +12,6 @@ class Track {
     size_t len() const;
 
    private:
-    std::vector<std::vector<float>> data;
+    std::vector<std::vector<float>> m_data;
+    size_t m_sampling_rate;
 };
