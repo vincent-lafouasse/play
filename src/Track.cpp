@@ -38,7 +38,6 @@ Track::Track(const std::string& path) : m_data() {
     assert(metadata.bit_depth == 8 || metadata.bit_depth == 16 ||
            metadata.bit_depth == 24 || metadata.bit_depth == 32);
     assert(metadata.n_channels <= 2);
-    metadata.log();
 
     assert(reader.peek_fourcc() == "data");
     m_data = read_data(reader, metadata);

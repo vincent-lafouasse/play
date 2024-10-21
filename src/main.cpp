@@ -11,4 +11,7 @@ int main(int ac, char* av[]) {
     }
 
     Track track(av[1]);
+    std::cout << track.n_channels() << std::endl;
+    std::cout << track.sampling_rate() << std::endl;
+    std::cout << track.len() << std::endl;
 }
