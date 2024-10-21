@@ -33,6 +33,11 @@ Track::Track(const std::string& path) {
     LittleEndianReader reader(path);
 
     MetaData metadata = read_metadata(reader);
+    assert(metadata.bit_depth == 8 || metadata.bit_depth == 16 ||
+           metadata.bit_depth == 24 || metadata.bit_depth == 32);
+    assert(metadata.n_channels <= 2);
+    metadata.log();
+
     assert(reader.peek_fourcc() == "data");
 }
 
@@ -47,10 +52,6 @@ static MetaData read_metadata(LittleEndianReader(&reader)) {
 
     skip_chunk_until(reader, "fmt ");
     MetaData metadata = read_format_chunk(reader);
-    assert(metadata.bit_depth == 8 || metadata.bit_depth == 16 ||
-           metadata.bit_depth == 24 || metadata.bit_depth == 32);
-    metadata.log();
-
     skip_chunk_until(reader, "data");
     return metadata;
 }
