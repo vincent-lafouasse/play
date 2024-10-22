@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "OutputStream.h"
 #include "Track.h"
 
 #define USAGE "play WAV_FILE"
@@ -15,4 +14,5 @@ int main(int ac, char* av[]) {
     std::cout << track.n_channels() << std::endl;
     std::cout << track.sampling_rate() << std::endl;
     std::cout << track.len() << std::endl;
+    track.play();
 }
