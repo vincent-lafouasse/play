@@ -15,6 +15,7 @@ target_sources(play PRIVATE
 	src/LittleEndianReader.h
 
 	src/Track.cpp
+	src/track_play.cpp
 	src/Track.h
 
 	src/OutputStream.cpp
