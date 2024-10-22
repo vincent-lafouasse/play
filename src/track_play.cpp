@@ -16,11 +16,9 @@ struct StreamConfig {
     unsigned long buffer_size;
 };
 
-int find_device(int n_out)
-{
+int find_device(int n_out) {
     int n_devices = Pa_GetDeviceCount();
-    if (n_devices < 0)
-    {
+    if (n_devices < 0) {
         die("no device available", EXIT_FAILURE);
     }
 }
