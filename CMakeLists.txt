@@ -20,6 +20,9 @@ target_sources(play PRIVATE
 
 	src/OutputStream.cpp
 	src/OutputStream.h
+
+	src/error.cpp
+	src/error.h
 )
 set_target_properties(play PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Wpedantic -g3")
 target_include_directories(play PUBLIC src)

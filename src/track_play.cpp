@@ -1,6 +1,6 @@
 #include <portaudio.h>
-#include <iostream>
 #include "Track.h"
+#include "error.h"
 
 #define BUFFER_SIZE 256
 
@@ -15,6 +15,15 @@ struct StreamConfig {
     double sample_rate;
     unsigned long buffer_size;
 };
+
+int find_device(int n_out)
+{
+    int n_devices = Pa_GetDeviceCount();
+    if (n_devices < 0)
+    {
+        die("no device available", EXIT_FAILURE);
+    }
+}
 
 int callback(const void* _input_buffer,
              void* output_buffer,
@@ -56,7 +65,6 @@ void Track::play() const {
 
 static void check_error(PaError err) {
     if (err != paNoError) {
-        std::cerr << Pa_GetErrorText(err) << std::endl;
-        std::exit(EXIT_FAILURE);
+        die(Pa_GetErrorText(err), EXIT_FAILURE);
     }
 }
