@@ -1,4 +1,5 @@
 **/**.csv
+**/**.tsv
 .cache
 build
 .DS_Store
