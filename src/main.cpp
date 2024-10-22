@@ -11,5 +11,6 @@ int main(int ac, char* av[]) {
     }
 
     Track track(av[1]);
+    track.write_tsv();
     // track.play();
 }

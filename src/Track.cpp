@@ -1,6 +1,7 @@
 #include "Track.h"
 #include <cassert>
 #include <cstdint>
+#include <fstream>
 #include <iostream>
 
 #include "LittleEndianReader.h"
@@ -125,6 +126,22 @@ static void skip_chunk_until(LittleEndianReader& reader,
         reader.advance(size);
     }
     assert(reader.peek_fourcc() == fourcc);
+}
+
+static void write_single_track(const std::vector<float>& samples,
+                               const char* name);
+
+void Track::write_tsv() const {
+    write_single_track(m_data[0], "data.tsv");
+}
+
+static void write_single_track(const std::vector<float>& samples,
+                               const char* name) {
+    std::ofstream file(name);
+
+    for (float element : samples) {
+        file << element << '\t';
+    }
 }
 
 size_t Track::n_channels() const {
