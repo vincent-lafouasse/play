@@ -58,9 +58,28 @@ static std::vector<std::vector<float>> read_data(LittleEndianReader& reader,
     if (metadata.n_channels == 2)
         out.push_back(std::vector<float>());
 
+    std::ofstream raw_data("raw_data.tsv");
+
     for (size_t _ = 0; _ < n_blocks; _++) {
-        for (size_t channel = 0; channel < metadata.n_channels; channel++)
-            out[channel].push_back(read_sample(reader, metadata.bit_depth));
+        for (size_t channel = 0; channel < metadata.n_channels; channel++) {
+            if (metadata.bit_depth == 24) {
+                int32_t sample = reader.read_i24();
+                int32_t i24_max = (1 << 23) - 1;
+
+                if (sample > i24_max)
+                    sample = i24_max;
+                if (sample < -i24_max)
+                    sample = -i24_max;
+                float converted_sample =
+                    static_cast<float>(sample) / static_cast<float>(i24_max);
+                out[channel].push_back(converted_sample);
+                raw_data << converted_sample << '\t';
+            } else {
+                std::cerr << "unrecognized bit depth: " << metadata.bit_depth
+                          << std::endl;
+                std::exit(1);
+            }
+        }
     }
 
     return out;
@@ -77,7 +96,6 @@ static float read_sample(LittleEndianReader& reader, uint32_t bit_depth) {
             sample = -i24_max;
         return static_cast<float>(sample) / static_cast<float>(i24_max);
     }
-
     std::cerr << "unrecognized bit depth: " << bit_depth << std::endl;
     std::exit(1);
 }
