@@ -53,7 +53,7 @@ uint64_t LittleEndianReader::read_u64() {
     return out;
 }
 
-int32_t LittleEndianReader::read_i24() {
+int64_t LittleEndianReader::read_i24() {
     assert(index + 3 < bytes.size());
 
     uint8_t byte1 = bytes[index];  // LSD
@@ -61,11 +61,13 @@ int32_t LittleEndianReader::read_i24() {
     uint8_t byte3 = bytes[index + 2];  // MSD
 
     // most significant byte contains sign informindexion on top bit
-    bool is_negindexive = byte3 & 0b10000000;  // top bit
+    bool is_negative = byte3 & 0b10000000;  // top bit
     byte3 = byte3 & 0b01111111;
 
-    int32_t out = byte1 + (byte2 << 8) + (byte3 << 16);  // read as u24
-    if (is_negindexive)
+    uint32_t buffer = byte1 | byte2 << 8 | byte3 << 16;  // read as u24
+
+    int64_t out = buffer;
+    if (is_negative)
         out -= (1 << 23);  // rectify is top bit is lit
 
     index += 3;

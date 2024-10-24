@@ -12,5 +12,8 @@ int main(int ac, char* av[]) {
 
     Track track(av[1]);
     track.write_tsv();
+
+    uint32_t duration_ms = 1000.0 * static_cast<float>(track.len()) / static_cast<float>(track.sampling_rate());
+    std::cout << duration_ms << std::endl;
     // track.play();
 }

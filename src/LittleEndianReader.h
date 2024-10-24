@@ -14,7 +14,7 @@ class LittleEndianReader {
     uint16_t read_u16();
     uint32_t read_u32();
     uint64_t read_u64();
-    int32_t read_i24();
+    int64_t read_i24();
     std::string read_fourcc();
     std::string peek_fourcc() const;
 

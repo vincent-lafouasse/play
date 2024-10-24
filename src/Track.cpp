@@ -32,13 +32,22 @@ static MetaData read_metadata(LittleEndianReader& reader);
 static std::vector<std::vector<float>> read_data(LittleEndianReader& reader,
                                                  MetaData metata);
 
+template <typename T>
+T clamp(T value, T max) {
+    if (value > max)
+        return max;
+    if (value < -max)
+        return -max;
+    return value;
+}
+
 Track::Track(const std::string& path) : m_data() {
     LittleEndianReader reader(path);
 
     MetaData metadata = read_metadata(reader);
     assert(metadata.bit_depth == 8 || metadata.bit_depth == 16 ||
            metadata.bit_depth == 24 || metadata.bit_depth == 32);
-    assert(metadata.n_channels <= 2);
+    assert(metadata.n_channels == 2);
 
     assert(reader.peek_fourcc() == "data");
     m_data = read_data(reader, metadata);
@@ -49,40 +58,30 @@ static float read_sample(LittleEndianReader& reader, uint32_t bit_depth);
 
 static std::vector<std::vector<float>> read_data(LittleEndianReader& reader,
                                                  MetaData metadata) {
+    assert(metadata.bit_depth == 24);
+    assert(metadata.n_channels == 2);
     assert(reader.peek_fourcc() == "data");
-    std::vector<std::vector<float>> out{};
-    size_t n_blocks =
-        reader.read_u32() / (metadata.n_channels * metadata.bit_depth / 8);
-
-    out.push_back(std::vector<float>());
-    if (metadata.n_channels == 2)
-        out.push_back(std::vector<float>());
+    size_t n_samples = 
+        reader.read_u32() / (metadata.bit_depth / 8);
 
     std::ofstream raw_data("raw_data.tsv");
 
-    for (size_t _ = 0; _ < n_blocks; _++) {
-        for (size_t channel = 0; channel < metadata.n_channels; channel++) {
-            if (metadata.bit_depth == 24) {
-                int32_t sample = reader.read_i24();
-                int32_t i24_max = (1 << 23) - 1;
+    std::vector<float> left, right;
+    for (size_t i = 0; i < n_samples; i++) {
+        int64_t raw_sample = reader.read_i24();
+        int64_t i24_max = (1 << 23) - 1;
+        raw_sample = clamp(raw_sample, i24_max);
 
-                if (sample > i24_max)
-                    sample = i24_max;
-                if (sample < -i24_max)
-                    sample = -i24_max;
-                float converted_sample =
-                    static_cast<float>(sample) / static_cast<float>(i24_max);
-                out[channel].push_back(converted_sample);
-                raw_data << converted_sample << '\t';
-            } else {
-                std::cerr << "unrecognized bit depth: " << metadata.bit_depth
-                          << std::endl;
-                std::exit(1);
-            }
+        float sample = static_cast<float>(raw_sample) / static_cast<float>(i24_max);
+        if (i % 2 == 0) {
+            raw_data << sample << '\t';
+            left.push_back(sample);
+        } else {
+            right.push_back(sample);
         }
     }
 
-    return out;
+    return {left, right};
 }
 
 static float read_sample(LittleEndianReader& reader, uint32_t bit_depth) {
