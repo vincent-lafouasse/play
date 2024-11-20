@@ -2,6 +2,14 @@
 
 a WAV decoder and player using the `portaudio` audio interface and standard C++17
 
+## Build
+
+Build by running these from the root of the repository
+```sh
+cmake -B build -S .
+cmake --build build
+```
+
 ## references
 
 - https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
