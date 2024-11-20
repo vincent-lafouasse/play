@@ -10,6 +10,14 @@ cmake -B build -S .
 cmake --build build
 ```
 
+You will find the binary in `./build`
+
+## Usage
+
+```sh
+./play WAV_FILE
+```
+
 ## references
 
 - https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
