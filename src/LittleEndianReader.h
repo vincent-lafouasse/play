@@ -8,7 +8,7 @@ typedef std::vector<char> Bytes;
 
 class LittleEndianReader {
    public:
-    LittleEndianReader(const std::string& path);
+    explicit LittleEndianReader(const std::string& path);
     void advance(size_t n);
     uint8_t read_u8();
     uint16_t read_u16();
