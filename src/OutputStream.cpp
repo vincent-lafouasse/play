@@ -14,7 +14,7 @@ OutputStream::OutputStream(OutputStreamConfig stream_config) {
     std::memset(&stream_params, 0, sizeof(stream_params));
     stream_params.channelCount = cfg.n_channels;
     stream_params.device = device;
-    stream_params.hostApiSpecificStreamInfo = NULL;
+    stream_params.hostApiSpecificStreamInfo = nullptr;
     stream_params.sampleFormat = paFloat32;
     stream_params.suggestedLatency =
         Pa_GetDeviceInfo(device)->defaultLowOutputLatency;
@@ -28,7 +28,7 @@ void OutputStream::open(
                     PaStreamCallbackFlags status_flags,
                     void* user_data),
     void* data) {
-    check_error(Pa_OpenStream(&pa_stream, NULL, &stream_params, cfg.sample_rate,
+    check_error(Pa_OpenStream(&pa_stream, nullptr, &stream_params, cfg.sample_rate,
                               cfg.buffer_size, paNoFlag, callback, data));
 }
 
