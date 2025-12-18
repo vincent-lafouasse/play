@@ -2,6 +2,8 @@
 
 a WAV decoder and player using the `portaudio` audio interface and standard C++17
 
+this became [cPlayer](https://github.com/vincent-lafouasse/cPlayer)
+
 ## Build
 
 Build by running these from the root of the repository
